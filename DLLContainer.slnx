@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="DLLContainer/DLLContainer.vcxproj" Id="276c7d91-1df5-48e4-871c-2a82289040de" />
+</Solution>
