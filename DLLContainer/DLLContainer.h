@@ -25,7 +25,7 @@ namespace cont
 		const wchar_t* eGet()const;
 	};
 
-	template <typename T> struct DLLCONTAINER_API NODE
+	template <typename T> struct NODE
 	{
 		T* prev_pos{ nullptr };
 		T data{};
@@ -215,7 +215,176 @@ namespace cont
 			return temp->data;
 		}
 
+		void clear()
+		{
+			if (mPtr)
+			{
+				NODE<T>* current{ mPtr };
+				NODE<T>* next{ mPtr };
+
+				while (next != nullptr)
+				{
+					next = current->next_pos;
+					delete current;
+					current = next;
+				}
+			}
+
+			mPtr = nullptr;
+			container_size = 0;
+		}
+
+		void push_back(T element)
+		{
+			if (!mPtr)
+			{
+				mPtr = new NODE<T>{};
+
+				mPtr->data = element;
+
+				++container_size;
+			}
+			else
+			{
+				NODE<T>* counter{ mPtr };
+				NODE<T>* temp{ new NODE<T>{} };
+
+				while (counter->next_pos != nullptr)counter = counter->next_pos;
+
+				temp->data = element;
+				temp->prev_pos = counter;
+				counter->next_pos = temp;
+
+				++container_size;
+			}
+		}
+		void push_back(T* element)
+		{
+			if (!mPtr)
+			{
+				mPtr = new NODE<T>{};
+
+				mPtr->data = *element;
+
+				++container_size;
+			}
+			else
+			{
+				NODE<T>* counter{ mPtr };
+				NODE<T>* temp{ new NODE<T>{} };
+
+				while (counter->next_pos != nullptr)counter = counter->next_pos;
+
+				temp->data = *element;
+				temp->prev_pos = counter;
+				counter->next_pos = temp;
+
+				++container_size;
+			}
+		}
 		
+		void push_front(T element)
+		{
+			if (!mPtr)
+			{
+				mPtr = new NODE<T>;
+				mPtr->data = element;
+				++container_size;
+			}
+			else
+			{
+				NODE<T>* temp = new NODE<T>;
+
+				temp->data = element;
+				temp->next_pos = mPtr;
+				mPtr = temp;
+
+				++container_size;
+			}
+		}
+		void push_front(T* element)
+		{
+			if (!mPtr)
+			{
+				mPtr = new NODE<T>;
+				mPtr->data = *element;
+				++container_size;
+			}
+			else
+			{
+				NODE<T>* temp = new NODE<T>;
+
+				temp->data = *element;
+				temp->next_pos = mPtr;
+				mPtr = temp;
+
+				++container_size;
+			}
+		}
+
+		void erase(size_t index)
+		{
+			if (!mPtr)throw EXCEPTION(BAD_PTR);
+
+			if (index < 0 || index >= container_size)throw EXCEPTION(BAD_INDEX);
+
+			NODE<T>* to_delete{ mPtr };
+			NODE<T>* previous{ nullptr };
+
+			for (size_t i = 0; i <= index; ++i)to_delete = to_delete->next_pos;
+
+			previous = to_delete->prev_pos;
+			previous->next_pos = to_delete->next_pos;
+
+			delete to_delete;
+
+			--container_size;
+		}
+
+		void insert(T element, size_t index)
+		{
+			if (!mPtr)throw EXCEPTION(BAD_PTR);
+
+			if (index < 0 || index >= container_size)throw EXCEPTION(BAD_INDEX);
+
+			if (index == 0)push_front(element);
+			else
+			{
+				NODE<T>* old_node{ mPtr };
+				NODE<T>* new_node{ new NODE<T>{} };
+			
+				for (size_t i = 0; i <= index; ++i)old_node = old_node->next_pos;
+			
+				new_node->prev_pos = old_node;
+				new_node->data = element;
+				new_node->next_pos = old_node->next_pos;
+			
+				++container_size;
+			}
+		}
+		void insert(T* element, size_t index)
+		{
+			if (!mPtr)throw EXCEPTION(BAD_PTR);
+
+			if (index < 0 || index >= container_size)throw EXCEPTION(BAD_INDEX);
+
+			if (index == 0)push_front(*element);
+			else
+			{
+				NODE<T>* old_node{ mPtr };
+				NODE<T>* new_node{ new NODE<T>{} };
+
+				for (size_t i = 0; i <= index; ++i)old_node = old_node->next_pos;
+
+				new_node->prev_pos = old_node;
+				new_node->data = *element;
+				new_node->next_pos = old_node->next_pos;
+
+				++container_size;
+			}
+		}
+
+
 	};
 
 
