@@ -27,9 +27,9 @@ namespace cont
 
 	template <typename T> struct NODE
 	{
-		T* prev_pos{ nullptr };
+		NODE* prev_pos{ nullptr };
 		T data{};
-		T* next_pos{ nullptr };
+		NODE* next_pos{ nullptr };
 	};
 
 	template <typename T> class BAG
@@ -108,7 +108,7 @@ namespace cont
 			if (mPtr)
 			{
 				NODE<T>* current{ mPtr };
-				NODE<T*> next{ mPtr };
+				NODE<T>* next{ mPtr };
 
 				while (next != nullptr)
 				{
@@ -141,7 +141,7 @@ namespace cont
 
 			if (other.mPtr)
 			{
-				NODE<T*> source{ other.mPtr };
+				NODE<T>* source{ other.mPtr };
 				NODE<T>* destination{ mPtr };
 			
 				while (source != nullptr)
@@ -213,6 +213,11 @@ namespace cont
 			}
 
 			return temp->data;
+		}
+
+		size_t size()const 
+		{
+			return container_size;
 		}
 
 		void clear()
@@ -331,7 +336,7 @@ namespace cont
 			NODE<T>* to_delete{ mPtr };
 			NODE<T>* previous{ nullptr };
 
-			for (size_t i = 0; i <= index; ++i)to_delete = to_delete->next_pos;
+			for (size_t i = 0; i < index; ++i)to_delete = to_delete->next_pos;
 
 			previous = to_delete->prev_pos;
 			previous->next_pos = to_delete->next_pos;
@@ -353,11 +358,16 @@ namespace cont
 				NODE<T>* old_node{ mPtr };
 				NODE<T>* new_node{ new NODE<T>{} };
 			
-				for (size_t i = 0; i <= index; ++i)old_node = old_node->next_pos;
+				for (size_t i = 0; i < index -1; ++i)old_node = old_node->next_pos;
 			
 				new_node->prev_pos = old_node;
 				new_node->data = element;
 				new_node->next_pos = old_node->next_pos;
+				
+				NODE<T>* atemp = old_node->next_pos;
+
+				old_node->next_pos = new_node;
+				atemp->prev_pos = new_node;
 			
 				++container_size;
 			}
@@ -374,17 +384,20 @@ namespace cont
 				NODE<T>* old_node{ mPtr };
 				NODE<T>* new_node{ new NODE<T>{} };
 
-				for (size_t i = 0; i <= index; ++i)old_node = old_node->next_pos;
+				for (size_t i = 0; i < index - 1; ++i)old_node = old_node->next_pos;
 
 				new_node->prev_pos = old_node;
 				new_node->data = *element;
 				new_node->next_pos = old_node->next_pos;
+				
+				NODE<T>* atemp = old_node->next_pos;
 
+				old_node->next_pos = new_node;
+				atemp->prev_pos = new_node;
+				
 				++container_size;
 			}
 		}
-
-
 	};
 
 
