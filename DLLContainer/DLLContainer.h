@@ -6,6 +6,8 @@
 #define DLLCONTAINER_API __declspec(dllimport)
 #endif
 
+#include <iterator>
+
 constexpr int BAD_PTR{ 5001 };
 constexpr int BAD_INDEX{ 5002 };
 constexpr int BAD_PARAM{ 5003 };
@@ -397,6 +399,23 @@ namespace cont
 				
 				++container_size;
 			}
+		}
+
+		T& front()
+		{
+			if (!mPtr)throw EXCEPTION(BAD_PTR);
+			
+			return mPtr->data;
+		}
+		T& back()
+		{
+			if (!mPtr)throw EXCEPTION(BAD_PTR);
+
+			NODE<T>* temp{ mPtr };
+
+			while (temp->next_pos != nullptr)temp = temp->next_pos;
+
+			return temp->data;
 		}
 	};
 
