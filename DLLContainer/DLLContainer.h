@@ -125,6 +125,8 @@ namespace cont
 
 		BAG<T>& operator = (BAG<T>& other)
 		{
+			if (mPtr != nullptr && mPtr == other.mPtr)throw EXCEPTION(BAD_PARAM);
+
 			if (mPtr)
 			{
 				NODE<T>* current{ mPtr };
@@ -148,7 +150,7 @@ namespace cont
 			
 				while (source != nullptr)
 				{
-					NODE<T>* current{ new NODE<T*>{} };
+					NODE<T>* current{ new NODE<T>{} };
 
 					current->data = source->data;
 					
@@ -174,6 +176,8 @@ namespace cont
 		}
 		BAG<T>& operator = (BAG<T>&& other)
 		{
+			if (mPtr != nullptr && mPtr == other.mPtr)throw EXCEPTION(BAD_PARAM);
+
 			if (mPtr)
 			{
 				NODE<T>* current{ mPtr };
@@ -215,6 +219,11 @@ namespace cont
 			}
 
 			return temp->data;
+		}
+
+		bool empty() const
+		{
+			return (!mPtr);
 		}
 
 		size_t size()const 
@@ -335,16 +344,33 @@ namespace cont
 
 			if (index < 0 || index >= container_size)throw EXCEPTION(BAD_INDEX);
 
-			NODE<T>* to_delete{ mPtr };
-			NODE<T>* previous{ nullptr };
+			if (container_size == 1)
+			{
+				delete mPtr;
+				mPtr = nullptr;
+			}
+			else
+			{
+				if (index == 0)
+				{
+					NODE<T>* temp = mPtr->next_pos;
+					delete mPtr;
+					mPtr = temp;
+				}
+				else
+				{
+					NODE<T>* to_delete{ mPtr };
+					NODE<T>* previous{ nullptr };
 
-			for (size_t i = 0; i < index; ++i)to_delete = to_delete->next_pos;
+					for (size_t i = 0; i < index; ++i)to_delete = to_delete->next_pos;
 
-			previous = to_delete->prev_pos;
-			previous->next_pos = to_delete->next_pos;
+					previous = to_delete->prev_pos;
+					previous->next_pos = to_delete->next_pos;
 
-			delete to_delete;
-
+					delete to_delete;
+				}
+			}
+			
 			--container_size;
 		}
 
@@ -416,6 +442,208 @@ namespace cont
 			while (temp->next_pos != nullptr)temp = temp->next_pos;
 
 			return temp->data;
+		}
+
+		class iterator
+		{
+		private:
+			NODE<T>* it_ptr{ nullptr };
+			BAG* container_ptr{ nullptr };
+			
+		public:
+			using iterator_category = std::bidirectional_iterator_tag;
+			using difference_type = ptrdiff_t;
+			using value_type = T;
+			using pointer = T*;
+			using reference = T&;
+
+			friend class BAG<T>;
+
+			iterator(BAG<T>* current_bag, NODE<T>* init_node)
+			{
+				it_ptr = init_node;
+				container_ptr = current_bag;
+			}
+
+			pointer operator -> ()
+			{
+				return it_ptr;
+			}
+			reference operator * ()
+			{
+				return it_ptr->data;
+			}
+
+			iterator& operator ++()
+			{
+				it_ptr = it_ptr->next_pos;
+
+				return (*this);
+			}
+			iterator operator ++(int)
+			{
+				iterator temp{ (*this) };
+
+				it_ptr = it_ptr->next_pos;
+
+				return temp;
+			}
+
+			iterator& operator --()
+			{
+				it_ptr = it_ptr->prev_pos;
+
+				return (*this);
+			}
+			iterator operator --(int)
+			{
+				iterator temp{ (*this) };
+
+				it_ptr = it_ptr->prev_pos;
+
+				return temp;
+			}
+
+			iterator& operator + (size_t step)
+			{
+				for (size_t i = 0; i < step; ++i)it_ptr = it_ptr->next_pos;
+
+				return (*this);
+			}
+			iterator& operator - (size_t step)
+			{
+				for (size_t i = 0; i < step; ++i)it_ptr = it_ptr->prev_pos;
+
+				return (*this);
+			}
+
+			friend bool operator == (const iterator& current, const iterator& other)
+			{
+				if (!other.it_ptr) return false;
+
+				return(current.it_ptr == other.it_ptr);
+			}
+			friend bool operator != (const iterator& current, const iterator& other)
+			{
+				if (!other.it_ptr) return false;
+
+				return(current.it_ptr != other.it_ptr);
+			}
+
+			bool operator > (const iterator& other)
+			{
+				NODE<T>* temp{ container_ptr->mPtr };
+
+				size_t counter_current{ 0 };
+				size_t counter_other{ 0 };
+
+				while (temp != it_ptr)
+				{
+					temp = temp->next_pos;
+					++counter_current;
+				}
+
+				temp = container_ptr->mPtr;
+				while (temp != other.it_ptr)
+					{
+						temp = temp->next_pos;
+						++counter_other;
+					}
+				
+				return (counter_current > counter_other);
+			}
+			bool operator < (const iterator& other)
+			{
+				NODE<T>* temp{ container_ptr->mPtr };
+
+				size_t counter_current{ 0 };
+				size_t counter_other{ 0 };
+
+				while (temp != it_ptr)
+				{
+					temp = temp->next_pos;
+					++counter_current;
+				}
+
+				temp = container_ptr->mPtr;
+				while (temp != other.it_ptr)
+					{
+						temp = temp->next_pos;
+						++counter_other;
+					}
+				
+				return (counter_current < counter_other);
+			}
+
+			bool operator >= (const iterator& other)
+			{
+				NODE<T>* temp{ container_ptr->mPtr };
+
+				size_t counter_current{ 0 };
+				size_t counter_other{ 0 };
+
+				while (temp != it_ptr)
+				{
+
+					temp = temp->next_pos;
+					++counter_current;
+				}
+
+				temp = container_ptr-mPtr;
+				while (temp != other.it_ptr)
+				{
+					temp = temp->next_pos;
+					++counter_other;
+				}
+
+				return (counter_current >= counter_other);
+			}
+			bool operator <= (const iterator& other)
+			{
+				NODE<T>* temp{ container_ptr->mPtr };
+
+				size_t counter_current{ 0 };
+				size_t counter_other{ 0 };
+
+				while (temp != it_ptr)
+				{
+					temp = temp->next_pos;
+					++counter_current;
+				}
+
+				temp = container_ptr->mPtr;
+				while (temp != other.it_ptr)
+				{
+					temp = temp->next_pos;
+					++counter_other;
+				}
+
+				return (counter_current <= counter_other);
+			}
+
+		};
+
+		iterator begin()
+		{
+			return iterator(this, mPtr);
+		}
+		iterator end()
+		{
+			return iterator(this, nullptr);
+		}
+
+		void erase(iterator what)
+		{
+			NODE<T>* temp{ mPtr };
+			size_t count = 0;
+
+			while (temp != what.it_ptr)
+			{
+				temp = temp->next_pos;
+				++count;
+			}
+
+			erase(count);
 		}
 	};
 
