@@ -491,7 +491,15 @@ namespace cont
 
 			iterator& operator --()
 			{
-				it_ptr = it_ptr->prev_pos;
+				if (it_ptr == nullptr)
+				{
+					NODE<T>* temp{ container_ptr->mPtr };
+
+					while (temp->next_pos != nullptr)temp = temp->next_pos;
+
+					it_ptr = temp;
+				}
+				else it_ptr = it_ptr->prev_pos;
 
 				return (*this);
 			}
@@ -512,7 +520,16 @@ namespace cont
 			}
 			iterator& operator - (size_t step)
 			{
-				for (size_t i = 0; i < step; ++i)it_ptr = it_ptr->prev_pos;
+				if (it_ptr == nullptr)
+				{
+					NODE<T>* temp{ container_ptr->mPtr };
+
+					while (temp->next_pos != nullptr)temp = temp->next_pos;
+					for (size_t i = 0; i < step; ++i)temp = temp->prev_pos;
+					it_ptr = temp;
+				}
+				else
+					for (size_t i = 0; i < step; ++i)it_ptr = it_ptr->prev_pos;
 
 				return (*this);
 			}
@@ -589,7 +606,7 @@ namespace cont
 					++counter_current;
 				}
 
-				temp = container_ptr-mPtr;
+				temp = container_ptr->mPtr;
 				while (temp != other.it_ptr)
 				{
 					temp = temp->next_pos;
