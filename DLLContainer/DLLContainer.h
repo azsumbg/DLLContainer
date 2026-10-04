@@ -361,11 +361,15 @@ namespace cont
 				{
 					NODE<T>* to_delete{ mPtr };
 					NODE<T>* previous{ nullptr };
+					NODE<T>* next{ nullptr };
 
 					for (size_t i = 0; i < index; ++i)to_delete = to_delete->next_pos;
 
+					next = to_delete->next_pos;
 					previous = to_delete->prev_pos;
-					previous->next_pos = to_delete->next_pos;
+					
+					previous->next_pos = next;
+					next->prev_pos = previous;
 
 					delete to_delete;
 				}
@@ -385,17 +389,18 @@ namespace cont
 			{
 				NODE<T>* old_node{ mPtr };
 				NODE<T>* new_node{ new NODE<T>{} };
+				NODE<T>* next_node{ nullptr };
 			
-				for (size_t i = 0; i < index -1; ++i)old_node = old_node->next_pos;
+				for (size_t i = 0; i < index - 1; ++i)old_node = old_node->next_pos;
 			
+				next_node = old_node->next_pos;
+
 				new_node->prev_pos = old_node;
 				new_node->data = element;
-				new_node->next_pos = old_node->next_pos;
+				new_node->next_pos = next_node;
 				
-				NODE<T>* atemp = old_node->next_pos;
-
 				old_node->next_pos = new_node;
-				atemp->prev_pos = new_node;
+				next_node->prev_pos = new_node;
 			
 				++container_size;
 			}
@@ -411,18 +416,19 @@ namespace cont
 			{
 				NODE<T>* old_node{ mPtr };
 				NODE<T>* new_node{ new NODE<T>{} };
+				NODE<T>* next_node{ nullptr };
 
 				for (size_t i = 0; i < index - 1; ++i)old_node = old_node->next_pos;
 
+				next_node = old_node->next_pos;
+
 				new_node->prev_pos = old_node;
-				new_node->data = *element;
-				new_node->next_pos = old_node->next_pos;
-				
-				NODE<T>* atemp = old_node->next_pos;
+				new_node->data = element;
+				new_node->next_pos = next_node;
 
 				old_node->next_pos = new_node;
-				atemp->prev_pos = new_node;
-				
+				next_node->prev_pos = new_node;
+
 				++container_size;
 			}
 		}
@@ -448,8 +454,21 @@ namespace cont
 		{
 		private:
 			NODE<T>* it_ptr{ nullptr };
-			BAG* container_ptr{ nullptr };
+			BAG<T>* container_ptr{ nullptr };
 			
+			size_t find_index(NODE<T>* ptr_to_convert) const
+			{
+				size_t index{ 0 };
+				NODE<T>* temp{ container_ptr->mPtr };
+
+				while (temp != nullptr && temp != ptr_to_convert)
+				{
+					temp = temp->next_pos;
+					++index;
+				}
+				return index;
+			}
+
 		public:
 			using iterator_category = std::bidirectional_iterator_tag;
 			using difference_type = ptrdiff_t;
@@ -525,7 +544,7 @@ namespace cont
 					NODE<T>* temp{ container_ptr->mPtr };
 
 					while (temp->next_pos != nullptr)temp = temp->next_pos;
-					for (size_t i = 0; i < step; ++i)temp = temp->prev_pos;
+					for (size_t i = 0; i < step - 1; ++i)temp = temp->prev_pos;
 					it_ptr = temp;
 				}
 				else
@@ -549,93 +568,20 @@ namespace cont
 
 			bool operator > (const iterator& other)
 			{
-				NODE<T>* temp{ container_ptr->mPtr };
-
-				size_t counter_current{ 0 };
-				size_t counter_other{ 0 };
-
-				while (temp != it_ptr)
-				{
-					temp = temp->next_pos;
-					++counter_current;
-				}
-
-				temp = container_ptr->mPtr;
-				while (temp != other.it_ptr)
-					{
-						temp = temp->next_pos;
-						++counter_other;
-					}
-				
-				return (counter_current > counter_other);
+				return (find_index(it_ptr) > find_index(other.it_ptr));
 			}
 			bool operator < (const iterator& other)
 			{
-				NODE<T>* temp{ container_ptr->mPtr };
-
-				size_t counter_current{ 0 };
-				size_t counter_other{ 0 };
-
-				while (temp != it_ptr)
-				{
-					temp = temp->next_pos;
-					++counter_current;
-				}
-
-				temp = container_ptr->mPtr;
-				while (temp != other.it_ptr)
-					{
-						temp = temp->next_pos;
-						++counter_other;
-					}
-				
-				return (counter_current < counter_other);
+				return (find_index(it_ptr) < find_index(other.it_ptr));
 			}
 
 			bool operator >= (const iterator& other)
 			{
-				NODE<T>* temp{ container_ptr->mPtr };
-
-				size_t counter_current{ 0 };
-				size_t counter_other{ 0 };
-
-				while (temp != it_ptr)
-				{
-
-					temp = temp->next_pos;
-					++counter_current;
-				}
-
-				temp = container_ptr->mPtr;
-				while (temp != other.it_ptr)
-				{
-					temp = temp->next_pos;
-					++counter_other;
-				}
-
-				return (counter_current >= counter_other);
+				return (find_index(it_ptr) >= find_index(other.it_ptr));
 			}
 			bool operator <= (const iterator& other)
 			{
-				NODE<T>* temp{ container_ptr->mPtr };
-
-				size_t counter_current{ 0 };
-				size_t counter_other{ 0 };
-
-				while (temp != it_ptr)
-				{
-					temp = temp->next_pos;
-					++counter_current;
-				}
-
-				temp = container_ptr->mPtr;
-				while (temp != other.it_ptr)
-				{
-					temp = temp->next_pos;
-					++counter_other;
-				}
-
-				return (counter_current <= counter_other);
+				return (find_index(it_ptr) <= find_index(other.it_ptr));
 			}
 
 		};
